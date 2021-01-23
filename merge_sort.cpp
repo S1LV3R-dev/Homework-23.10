@@ -1,9 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
+using namespace std;
 
 bool generate_file(int N, const char* fname) {
-    std::ofstream outFile(fname);
+    ofstream outFile(fname);
     if (!outFile) return false;
     while (N-- > 0)
         outFile << ' ' << rand() % 10000;
@@ -12,10 +13,10 @@ bool generate_file(int N, const char* fname) {
 }
 
 bool isSortedFile(const char* fname) {
-    std::ifstream inFile;
+    ifstream inFile;
     inFile.open(fname);
     if (!inFile)
-        throw "Can not open file";
+        throw "Can't open file";
     int last, current;
     bool answer = true;
     inFile >> last;
@@ -32,10 +33,10 @@ bool isSortedFile(const char* fname) {
 }
 
 bool _split_file(const char *fname, const char *tmp1, const char *tmp2, const char *tmp3) {
-    std::ifstream inFile(fname);
+    ifstream inFile(fname);
     if (!inFile) throw "Can not read file";
 
-    std::ofstream outFile[3];
+    ofstream outFile[3];
 
     outFile[0].open(tmp1);
     if (!outFile[0]) throw "Can not write to file";
@@ -66,10 +67,10 @@ bool _split_file(const char *fname, const char *tmp1, const char *tmp2, const ch
 }
 
 void _merge_file(const char* tmp1, const char* tmp2, const char* tmp3, const char *fname) {
-    std::ofstream outFile(fname);
+    ofstream outFile(fname);
     if (!outFile) throw "Can not write to file";
 
-    std::ifstream inFile[3];
+    ifstream inFile[3];
     inFile[0].open(tmp1);
     if (!inFile[0]) throw "Can not read file tmp1";
     inFile[1].open(tmp2);
@@ -158,6 +159,22 @@ void _merge_file(const char* tmp1, const char* tmp2, const char* tmp3, const cha
     outFile.close(); inFile[0].close(); inFile[1].close(); inFile[2].close();
 }
 
+bool removed(const char* delfile){
+    if (remove(delfile)!=0){
+        return false;
+    }
+    return true;
+}
+
+void _remove_temp_files(const char* tmp1, const char* tmp2, const char* tmp3){
+    if(!removed(tmp1))
+        cout<<"Error deleting file " << tmp1;
+    if(!removed(tmp2))
+        cout<<"Error deleting file " << tmp2;
+    if(!removed(tmp3))
+        cout<<"Error deleting file " << tmp3;
+}
+
 int MergeFileSorting(const char* fname, const char * outfilename) {
     char tmp1[] = "_temp_file_1.txt", tmp2[] = "_temp_file_2.txt", tmp3[] = "_temp_file_3.txt";
     bool key;
@@ -168,36 +185,33 @@ int MergeFileSorting(const char* fname, const char * outfilename) {
         key = _split_file(outfilename, tmp1, tmp2, tmp3);
         ++counter;
     } 
+    _remove_temp_files(tmp1, tmp2, tmp3);
     return counter;
 }
 
 
-int main()
-{
-    clock_t tictok = clock();
-
-    char fname[] = "data.txt";
-    char outfname[] = "result.txt";
-    if (!generate_file(10, fname)) {
-        std::cout << "Can not create file for test!" << std::endl;
+int main(){
+    char ifname[] = "data.txt";
+    char ofname[] = "result.txt";
+    cout << "Generating 50 random numbers in data.txt" << endl;
+    if (!generate_file(50, ifname)) {
+        cout << "Can not create file for test!" << endl;
         return 1;
     }
 
-    int N=MergeFileSorting(fname, outfname);
-
-    std::cout << clock() - tictok << " tics" << std::endl;
+    int N=MergeFileSorting(ifname, ofname);
 
     try {
-        if (isSortedFile(outfname)) {
-            std::cout << "File " << outfname << " is sorted." << std::endl;
-            std::cout << "Total " << N << " splits." << std::endl;
+        if (isSortedFile(ofname)) {
+            cout << "File " << ofname << " is sorted." << endl;
+            cout << "Total " << N << " splits." << endl;
         }
         else {
-            std::cout << "File " << outfname << " is not sorted." << std::endl;
+            cout << "File " << ofname << " is not sorted." << endl;
         }
     }
     catch (const char* error) {
-        std::cout << "Error: " << error << std::endl;
+        cout << "Error: " << error << endl;
     }
 
     return 0;
